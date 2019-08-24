@@ -2,11 +2,11 @@ import terminal, net, random, strutils, os, streams
 
 var
   serVer: string
-  sock = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
   attempts = 0
   found = 0
   port = ""
   output = ""
+  error: string
 
 proc genAddr(): string =
   randomize()
@@ -18,9 +18,13 @@ proc genAddr(): string =
   attempts = attempts + 1
   return (join([$ip0, $ip1, $ip2, $ip3], "."))
 
+proc handler() {.noconv.} =
+  quit(0)
+
 proc sockSSH(host: string): string =
   try:
     var
+      sock = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
       stream = newFileStream(output, fmWrite)
       ipServ = join([host, ":", port, "  - ", serVer])
     sock.connect(host, Port(parseInt(port)), 250)
@@ -31,7 +35,7 @@ proc sockSSH(host: string): string =
     sock.close()
     return serVer
   except:
-    sock.close()
+    error = getCurrentExceptionMsg()
     discard
 
 try:
@@ -50,12 +54,14 @@ except:
   quit(1)
 
 while true:
+  setControlCHook(handler)
   var host = genAddr()
   discard sockSSH(host)
   echo """
   # IoT fastHack v0.1
   # IP: $#                Service Version: $#
+  # Error: $#
   # Attempts Completed: $#        Found: $#
-""" % [join([host, ":", port]), serVer, $attempts, $found]
+""" % [join([host, ":", port]), serVer, $error, $attempts, $found]
   eraseScreen()
   setCursorPos(0, 0)
