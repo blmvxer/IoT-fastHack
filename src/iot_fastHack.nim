@@ -7,6 +7,8 @@ var
   port = ""
   output = ""
   error: string
+  ipServ: string
+
 
 proc genAddr(): string =
   randomize()
@@ -25,18 +27,18 @@ proc sockSSH(host: string): string =
   try:
     var
       sock = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-      stream = newFileStream(output, fmWrite)
-      ipServ = join([host, ":", port, "  - ", serVer])
+      stream = newFileStream(output, fmAppend)
     sock.connect(host, Port(parseInt(port)), 250)
     serVer = recvLine(sock, 250)
     found = found + 1
+    ipServ = join([host, ":", port, "  - ", serVer])
     stream.write(ipServ & "\n")
+    serVer = ""
     stream.close()
     sock.close()
     return serVer
   except:
     error = getCurrentExceptionMsg()
-    discard
 
 try:
   if paramCount() > 0:
