@@ -8,6 +8,7 @@ var
   output = ""
   error: string
   ipServ: string
+  stream = newFileStream(output, fmAppend)
 
 
 proc genAddr(): string =
@@ -24,10 +25,9 @@ proc handler() {.noconv.} =
   quit(0)
 
 proc sockSSH(host: string): string =
+  var
+    sock = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
   try:
-    var
-      sock = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-      stream = newFileStream(output, fmAppend)
     sock.connect(host, Port(parseInt(port)), 250)
     serVer = recvLine(sock, 250)
     found = found + 1
@@ -38,6 +38,7 @@ proc sockSSH(host: string): string =
     sock.close()
     return serVer
   except:
+    sock.close()
     error = getCurrentExceptionMsg()
 
 try:
