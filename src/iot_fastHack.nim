@@ -28,7 +28,7 @@ proc sockSSH(host: string): string =
   var
     sock = newSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
   try:
-    sock.connect(host, Port(parseInt(port)), 250)
+    sock.connect(host, Port(parseInt(port)), 50)
     serVer = recvLine(sock, 250)
     found = found + 1
     ipServ = join([host, ":", port, "  - ", serVer])
